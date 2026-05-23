@@ -4,7 +4,10 @@
    Profesor: Manuel Soto Romero                                     
    Ayudante: Diego Mendez Medina                                    
    Lab: Erick Arroyo 
-   Equipo: *)
+   Equipo: 
+    - Joaquin Rodrigo Ramirez Mendoza
+    - Dana Ximena Sanchez Loaeza
+   *)
 
 
 (* ################################################################# *)
@@ -43,11 +46,23 @@ Compute 2 * 6.
 
 (** **** Ejercicio 3: Funciones booleanas básicas *)
 
-Definition nandb (b1 b2 : bool) : bool
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Definition nandb (b1 b2 : bool) : bool :=
+  match b1 with
+  | true =>
+      match b2 with
+      | true => false
+      | false => true
+      end
+  | false => true
+  end.
 
-Definition xorb' (b1 b2 : bool) : bool
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Definition xorb' (b1 b2 : bool) : bool :=
+  match b1, b2 with
+  | true, true   => false
+  | true, false  => true
+  | false, true  => true
+  | false, false => false
+  end.
 
 Example test_nandb1 : nandb true  false = true.  Proof. reflexivity. Qed.
 Example test_nandb2 : nandb false false = true.  Proof. reflexivity. Qed.
@@ -65,14 +80,20 @@ Fixpoint par (n : nat) : bool :=
   | S (S k) => par k
   end.
 
-Definition impar (n : nat) : bool
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Definition impar (n : nat) : bool :=
+  negb (par n).
 
-Fixpoint suma_nat (n m : nat) : nat
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Fixpoint suma_nat (n m : nat) : nat :=
+  match n with
+  | O => m
+  | S n' => S (suma_nat n' m)
+  end.
 
-Fixpoint mult_nat (n m : nat) : nat
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Fixpoint mult_nat (n m : nat) : nat :=
+  match n with
+  | O => O
+  | S n' => suma_nat m (mult_nat n' m)
+  end.
 
 Compute par 4.        (* Esperado: true  *)
 Compute par 7.        (* Esperado: false *)
@@ -81,8 +102,11 @@ Compute mult_nat 3 4. (* Esperado: 12    *)
 
 (** **** Ejercicio 5: Potencia *)
 
-Fixpoint pot (b e : nat) : nat
-  (* REEMPLAZA ESTA LÍNEA CON TU DEFINICIÓN *). Admitted.
+Fixpoint pot (b e : nat) : nat :=
+  match e with
+  | O    => S O
+  | S k  => mult_nat b (pot b k)
+  end.
 
 Example test_pot1 : pot 2 0 = 1. Proof. reflexivity. Qed.
 Example test_pot2 : pot 2 3 = 8. Proof. reflexivity. Qed.
@@ -96,17 +120,21 @@ Example test_pot3 : pot 3 2 = 9. Proof. reflexivity. Qed.
 
 Theorem suma0_n : forall n : nat, 0 + n = n.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n.
+  simpl.
+  reflexivity.
 Qed.
 
 Theorem negb_involutiva : negb (negb true) = true.
 Proof.
-  (*TU DEMOSTRACION*)
+  simpl.
+  reflexivity.
 Qed.
 
 Theorem andb_comm_ff : andb false false = andb false false.
 Proof.
-  (*TU DEMOSTRACION*)
+  simpl.
+  reflexivity.
 Qed.
 
 (* ################################################################# *)
@@ -117,17 +145,26 @@ Qed.
 
 Theorem negb_negb : forall b : bool, negb (negb b) = b.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros b.
+  destruct b.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
 Qed.
 
 Theorem andb_false_r : forall b : bool, andb b false = false.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros b.
+  destruct b.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
 Qed.
 
 Theorem orb_true_l : forall b : bool, orb true b = true.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros b.
+  destruct b.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
 Qed.
 
 (** **** Ejercicio 8: Conmutatividad de orb *)
@@ -135,7 +172,16 @@ Qed.
 Theorem orb_comm : forall b1 b2 : bool,
     orb b1 b2 = orb b2 b1.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros b1 b2.
+  destruct b1.
+  - (* b1 = true *)
+    destruct b2.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+  - (* b1 = false *)
+    destruct b2.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
 Qed.
 
 (** **** Ejercicio 9: Casos sobre naturales *)
@@ -143,8 +189,17 @@ Qed.
 Theorem par_S_impar : forall n : nat,
     par (S n) = negb (par n).
 Proof.
-  (*TU DEMOSTRACION*)
-Admitted. (* Cambia a [Qed] cuando completes la demostración. *)
+  intros n.
+  destruct n as [| n'].
+  - (* n = 0 *)
+    simpl. reflexivity.
+  - (* n = S n' *)
+    destruct n' as [| k].
+    + (* n = 1 *)
+      simpl. reflexivity.
+    + (* n = S (S k) *)
+      simpl. reflexivity.
+Qed.
 
 (* ################################################################# *)
 (** * Bloque 5 — Reescritura con rewrite *)
@@ -155,13 +210,17 @@ Admitted. (* Cambia a [Qed] cuando completes la demostración. *)
 Theorem reescritura_simple :
     forall n m : nat, n = m -> n + 0 = m + 0.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n m H.
+  rewrite H.
+  reflexivity.
 Qed.
 
 Theorem reescritura_inv :
     forall n m : nat, m = n -> n + 0 = m + 0.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n m H.
+  rewrite H.
+  reflexivity.
 Qed.
 
 (** **** Ejercicio 11: Transitividad de la igualdad a mano *)
@@ -169,7 +228,10 @@ Qed.
 Theorem trans_eq_nat :
     forall a b c : nat, a = b -> b = c -> a = c.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros a b c Hab Hbc.
+  rewrite Hab.
+  rewrite Hbc.
+  reflexivity.
 Qed.
 
 (** **** Ejercicio 12: Congruencia y sustitución [()] *)
@@ -183,13 +245,17 @@ Fixpoint suma (n m : nat) : nat :=
 
 Theorem congr_S : forall n m : nat, n = m -> S n = S m.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n m H.
+  rewrite H.
+  reflexivity.
 Qed.
 
 Theorem congr_suma :
     forall n m k : nat, n = m -> suma (S n) k = suma (S m) k.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n m k H.
+  rewrite H.
+  reflexivity.
 Qed.
 
 (* ################################################################# *)
@@ -212,16 +278,14 @@ Proof.
   reflexivity.
 Qed.
 
-(** Parte (c): descomenta, ejecuta y observa.
+(** Parte (c): descomenta, ejecuta y observa. *)
 
-    Theorem intento_fallido : forall b : bool, b = true.
-    Proof.
-      intro b.
-      Abort.
+Theorem intento_fallido : forall b : bool, b = true.
+Proof.
+  intro b.
+  Abort.
 
-    Check negb.
-*)
-
+Check negb.
 (* ################################################################# *)
 (** * Bloque 7 — Reto final [(**)] *)
 (* ################################################################# *)
@@ -233,13 +297,16 @@ Proof. reflexivity. Qed.
 
 Theorem impar_1 : impar 1 = true.
 Proof.
-  (*TU DEMOSTRACION*)
+  simpl.
+  reflexivity.
 Qed.
 
 Theorem par_impar_complementarios :
     forall n : nat, impar n = negb (par n).
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n.
+  simpl.
+  reflexivity.
 Qed.
 
 (** **** Ejercicio 15: Leyes de De Morgan [(**)] *)
@@ -259,7 +326,8 @@ Theorem demorgan_or :
     forall a b : bool,
       negb (orb a b) = andb (negb a) (negb b).
 Proof.
-  (*TU DEMOSTRACION*)
+  intros a b.
+  destruct a; destruct b; simpl; reflexivity.
 Qed.
 
 (** **** Ejercicio 16: Función de comparación [(**)] *)
@@ -280,11 +348,16 @@ Fixpoint compara (n m : nat) : comparacion :=
 
 Theorem compara_refl : forall n : nat, compara n n = Eq.
 Proof.
-  (*TU DEMOSTRACION*)
-Admitted. (* Si no puedes completarla, deja [Admitted] con un comentario
-             que explique qué te faltó. *)
+  intros n.
+  (* Para probarlo para todo n, al hacer destruct n queda el caso
+     n = S n' con objetivo: compara n' n' = Eq, que es el mismo teorema
+     pero para n'. Eso requiere inducción pero no está permitido
+     o un lema previo equivalente ya demostrado. *)
+Admitted.
 
 Theorem compara_0_n : forall n : nat, compara 0 (S n) = Lt.
 Proof.
-  (*TU DEMOSTRACION*)
+  intros n.
+  simpl.
+  reflexivity.
 Qed.
